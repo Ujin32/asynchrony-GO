@@ -7,11 +7,7 @@ type Cache struct {
 }
 
 func (c *Cache) Increase(key string, value int) {
-	if _, ok := c.storage[key]; !ok {
-		c.storage[key] = value
-	} else {
-		c.storage[key] += value
-	}
+	c.storage[key] += value
 }
 
 func (c *Cache) Set(key string, value int) {
