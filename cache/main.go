@@ -52,7 +52,6 @@ func main() {
 			time.Sleep(time.Millisecond * 100)
 		}()
 	}
-	wg.Wait()
 
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
