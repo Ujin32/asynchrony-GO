@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"sync"
 	"time"
 )
@@ -86,7 +87,11 @@ func main() {
 			time.Sleep(time.Millisecond * 100)
 		}(i)
 	}
-	if semaphore1.Len() > 0 || semaphore2.Len() > 0 {
-		time.Sleep(time.Second * 10)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
+	defer cancel()
+	select {
+	case <-ctx.Done():
+		break
 	}
 }
