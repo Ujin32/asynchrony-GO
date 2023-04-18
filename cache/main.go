@@ -70,28 +70,36 @@ func main() {
 	semaphore1 := newSemaphore(3)
 	semaphore2 := newSemaphore(3)
 
-	for i := 0; i < 10; i++ {
-		go func() {
-			semaphore1.Acquire()
-			defer semaphore1.Release()
-			cache.Increase(k1, step)
-			time.Sleep(time.Millisecond * 100)
-		}()
-	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
+	defer cancel()
 
 	for i := 0; i < 10; i++ {
+		go func() {
+			select {
+			case <-ctx.Done():
+				break
+			default:
+				semaphore1.Acquire()
+				defer semaphore1.Release()
+				cache.Increase(k1, step)
+				time.Sleep(time.Millisecond * 100)
+			}
+
+		}()
+	}
+	for i := 0; i < 10; i++ {
 		go func(i int) {
-			semaphore2.Acquire()
-			defer semaphore2.Release()
-			cache.Set(k1, step*i)
-			time.Sleep(time.Millisecond * 100)
+			select {
+			case <-ctx.Done():
+				break
+			default:
+				semaphore2.Acquire()
+				defer semaphore2.Release()
+				cache.Set(k1, step*i)
+				time.Sleep(time.Millisecond * 100)
+			}
+
 		}(i)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
-	defer cancel()
-	select {
-	case <-ctx.Done():
-		break
-	}
 }
